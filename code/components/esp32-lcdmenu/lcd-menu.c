@@ -1,4 +1,3 @@
-//Header include guard for the extension file (lcd-menu-elaboration.c)
 #ifndef LCD_MENU_C
 #define LCD_MENU_C
 
@@ -8,71 +7,288 @@
 #include "smbus.h"
 #include "i2c-lcd1602.h"
 #include "lcd-menu.h"
-#include "lcd-menu-elaboration.h"
-
-//ID's of every lcd menu (is also the number in the lcdMenus array)
-#define MAIN_MENU_ID 0
-#define ECHO_MENU_ID 1
-#define RADIO_MENU_ID 2
-#define CLOCK_MENU_ID 3
-#define SPEECH_MENU_ID 4
-
-#define INVALID 99
 
 static i2c_lcd1602_info_t *tmp_lcd_info;
 
+const unsigned char botFireFrame1[8] = {
+
+    0b00000000,
+    0b00000010,
+    0b00001000,
+    0b00000101,
+    0b00010100,
+    0b00011110,
+    0b00011111,
+    0b00011111
+};
+
+const unsigned char botFireFrame2[8] = {
+
+    0b00000000,
+    0b00000010,
+    0b00001000,
+    0b00000001,
+    0b00010100,
+    0b00011110,
+    0b00011111,
+    0b00011111
+};
+
+const unsigned char botFireFrame3[8] = {
+
+    0b00001000,
+    0b00000001,
+    0b00000000,
+    0b00000100,
+    0b00001100,
+    0b00011111,
+    0b00011111,
+    0b00011111
+};
+
+const unsigned char botFireFrame4[8] = {
+
+    0b00000010,
+    0b00000000,
+    0b00000000,
+    0b00000100,
+    0b00010100,
+    0b00011110,
+    0b00011111,
+    0b00011111
+};
+
+const unsigned char topFireFrame1[8] = {
+
+    0b00000000,
+    0b00000000,
+    0b00000000,
+    0b00000000,
+    0b00000000,
+    0b00000010,
+    0b00001000,
+    0b00000001
+};
+
+const unsigned char topFireFrame2[8] = {
+
+    0b00000000,
+    0b00000000,
+    0b00000000,
+    0b00000010,
+    0b00001000,
+    0b00000001,
+    0b00000000,
+    0b00000010
+};
+
+const unsigned char topFireFrame3[8] = {
+
+    0b00000000,
+    0b00000010,
+    0b00001000,
+    0b00000001,
+    0b00000000,
+    0b00000010,
+    0b00001000,
+    0b00000001
+};
+
+const unsigned char topFireFrame4[8] = {
+
+    0b00001000,
+    0b00000001,
+    0b00000000,
+    0b00000000,
+    0b00000010,
+    0b00001000,
+    0b00000001,
+    0b00000010
+};
+
+
 //Static functions
-static void doFancyAnimation(i2c_lcd1602_info_t*);
+void doFancyAnimation(i2c_lcd1602_info_t*);
 
 
 int menu_updateMenu(i2c_lcd1602_info_t *lcdInfo, void *p)
 {
-    if (lcdMenus[currentLcdMenu].update == NULL)
-        return LCD_MENU_ERROR;
-    
-    if (p != NULL)
-        lcdMenus[currentLcdMenu].update(p);
-
-    return refreshMenu(lcdInfo, currentLcdMenu, currentMenuItem);
+    return 0;
 }
+
+void defineCustmChar(i2c_lcd1602_info_t* lcdInfo)
+{
+    //bot fire
+    i2c_lcd1602_define_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_0, botFireFrame1);
+    i2c_lcd1602_define_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_1, botFireFrame2);
+    i2c_lcd1602_define_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_2, botFireFrame3);
+    i2c_lcd1602_define_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_3, botFireFrame4);
+
+    //top fire
+    i2c_lcd1602_define_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_4, topFireFrame1);
+    i2c_lcd1602_define_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_5, topFireFrame2);
+    i2c_lcd1602_define_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_6, topFireFrame3);
+    i2c_lcd1602_define_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_7, topFireFrame4);
+}
+
+/*
+    Tried to reduce the amount of duplicate code through a method, method didnt work for some reason.
+    Because of the time im leaving it like this, I will keep the method in as proof of me trying to do it.
+*/
+
+// void displayCustmChar(i2c_lcd1602_info_t* lcdInfo, int row, int charID)
+// {
+//     for(int i = 0; i < 20; i++)
+//         {
+//             i2c_lcd1602_move_cursor(lcdInfo, i, row);
+//             i2c_lcd1602_write_char(lcdInfo, charID);
+//             vTaskDelay(10/portTICK_RATE_MS);
+//         }
+// }
 
 //Animation that plays when u start the application
-static void doFancyAnimation(i2c_lcd1602_info_t* lcdInfo)
+void doFancyAnimation(i2c_lcd1602_info_t* lcdInfo)
 {
-    i2c_lcd1602_move_cursor(lcdInfo, 0, 0);
-    for(int i = 0; i < 20; i++)
-    {
-        i2c_lcd1602_write_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_0);
-        vTaskDelay(15 / portTICK_RATE_MS);
-    }
-    i2c_lcd1602_move_cursor(lcdInfo, 19, 1);
-    i2c_lcd1602_set_right_to_left(lcdInfo);
-    for(int i = 0; i < 20; i++)
-    {
-        i2c_lcd1602_write_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_0);
-        vTaskDelay(15 / portTICK_RATE_MS);
-    }
-    i2c_lcd1602_move_cursor(lcdInfo, 0, 2);
-    i2c_lcd1602_set_left_to_right(lcdInfo);
-    for(int i = 0; i < 20; i++)
-    {
-        i2c_lcd1602_write_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_0);
-        vTaskDelay(15 / portTICK_RATE_MS);
-    }
-    i2c_lcd1602_move_cursor(lcdInfo, 19, 3);
-    i2c_lcd1602_set_right_to_left(lcdInfo);
-    for(int i = 0; i < 20; i++)
-    {
-        i2c_lcd1602_write_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_0);
-        vTaskDelay(15 / portTICK_RATE_MS);
-    }
-    i2c_lcd1602_set_left_to_right(lcdInfo);
-    vTaskDelay(100 / portTICK_RATE_MS);
-}
+    i2c_lcd1602_set_cursor(lcdInfo, false);
+    /*
+        custom 0 = bot fire  first frame.
+        custom 1 = bot fire  second frame.
+        custom 2 = bot fire  third frame.
+        custom 3 = bot fire  fourth frame.
 
-i2c_lcd1602_info_t* menu_getLcdInfo()
-{
-    return tmp_lcd_info;
+        custom 4 = top fire  first frame.
+        custom 5 = top fire  second frame.
+        custom 6 = top fire  third frame.
+        custom 7 = top fire  fourth frame.
+    */
+    defineCustmChar(lcdInfo);
+
+    for(int i = 0; i < 10; i++){
+
+        //frame 1
+        for(int i = 0; i < 20; i++)
+        {
+            i2c_lcd1602_move_cursor(lcdInfo, i, 3);
+            i2c_lcd1602_write_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_0);
+            vTaskDelay(10/portTICK_RATE_MS);
+        }
+
+        for(int i = 0; i < 20; i++)
+        {
+            i2c_lcd1602_move_cursor(lcdInfo, i, 2);
+            i2c_lcd1602_write_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_4);
+            vTaskDelay(10/portTICK_RATE_MS);
+        }
+
+        for(int i = 0; i < 20; i++)
+        {
+            i2c_lcd1602_move_cursor(lcdInfo, i, 1);
+            i2c_lcd1602_write_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_4);
+            vTaskDelay(10/portTICK_RATE_MS);
+        }
+
+        for(int i = 0; i < 20; i++)
+        {
+            i2c_lcd1602_move_cursor(lcdInfo, i, 0);
+            i2c_lcd1602_write_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_4);
+            vTaskDelay(10/portTICK_RATE_MS);
+        }
+
+        i2c_lcd1602_clear(lcdInfo);
+
+        //frame 2
+        for(int i = 0; i < 20; i++)
+        {
+            i2c_lcd1602_move_cursor(lcdInfo, i, 3);
+            i2c_lcd1602_write_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_1);
+            vTaskDelay(10/portTICK_RATE_MS);
+        }
+
+        for(int i = 0; i < 20; i++)
+        {
+            i2c_lcd1602_move_cursor(lcdInfo, i, 2);
+            i2c_lcd1602_write_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_5);
+            vTaskDelay(10/portTICK_RATE_MS);
+        }
+
+        for(int i = 0; i < 20; i++)
+        {
+            i2c_lcd1602_move_cursor(lcdInfo, i, 1);
+            i2c_lcd1602_write_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_5);
+            vTaskDelay(10/portTICK_RATE_MS);
+        }
+
+        for(int i = 0; i < 20; i++)
+        {
+            i2c_lcd1602_move_cursor(lcdInfo, i, 0);
+            i2c_lcd1602_write_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_5);
+            vTaskDelay(10/portTICK_RATE_MS);
+        }
+
+        i2c_lcd1602_clear(lcdInfo);
+
+        //frame 3
+        for(int i = 0; i < 20; i++)
+        {
+            i2c_lcd1602_move_cursor(lcdInfo, i, 3);
+            i2c_lcd1602_write_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_2);
+            vTaskDelay(10/portTICK_RATE_MS);
+        }
+
+        for(int i = 0; i < 20; i++)
+        {
+            i2c_lcd1602_move_cursor(lcdInfo, i, 2);
+            i2c_lcd1602_write_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_6);
+            vTaskDelay(10/portTICK_RATE_MS);
+        }
+
+        for(int i = 0; i < 20; i++)
+        {
+            i2c_lcd1602_move_cursor(lcdInfo, i, 1);
+            i2c_lcd1602_write_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_6);
+            vTaskDelay(10/portTICK_RATE_MS);
+        }
+
+        for(int i = 0; i < 20; i++)
+        {
+            i2c_lcd1602_move_cursor(lcdInfo, i, 0);
+            i2c_lcd1602_write_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_6);
+            vTaskDelay(10/portTICK_RATE_MS);
+        }
+
+        i2c_lcd1602_clear(lcdInfo);
+
+        //frame 4
+        for(int i = 0; i < 20; i++)
+        {
+            i2c_lcd1602_move_cursor(lcdInfo, i, 3);
+            i2c_lcd1602_write_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_3);
+            vTaskDelay(10/portTICK_RATE_MS);
+        }
+
+        for(int i = 0; i < 20; i++)
+        {
+            i2c_lcd1602_move_cursor(lcdInfo, i, 2);
+            i2c_lcd1602_write_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_7);
+            vTaskDelay(10/portTICK_RATE_MS);
+        }
+
+        for(int i = 0; i < 20; i++)
+        {
+            i2c_lcd1602_move_cursor(lcdInfo, i, 1);
+            i2c_lcd1602_write_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_7);
+            vTaskDelay(10/portTICK_RATE_MS);
+        }
+
+        for(int i = 0; i < 20; i++)
+        {
+            i2c_lcd1602_move_cursor(lcdInfo, i, 0);
+            i2c_lcd1602_write_char(lcdInfo, I2C_LCD1602_CHARACTER_CUSTOM_7);
+            vTaskDelay(10/portTICK_RATE_MS);
+        }
+
+    }
+
 }
 
 #endif

@@ -16,12 +16,9 @@ int menu_updateMenu(i2c_lcd1602_info_t*, void*);
 /*
 Call this method to start the animation
 
--Returns:       Void
+-Returns:       
 -Parameters:    a pointer to the lcd info
 */
 void doFancyAnimation(i2c_lcd1602_info_t*);
-
-//Returns the lcd info
-i2c_lcd1602_info_t* menu_getLcdInfo();
 
 #endif
