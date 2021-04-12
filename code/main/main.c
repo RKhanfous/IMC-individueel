@@ -36,10 +36,6 @@
 //lcd general settings
 static i2c_lcd1602_info_t *lcdInfo;
 
-//boolean to check if you went back a menu
-static bool wentBack = false;
-static int clickCounter = 0;
-
 
 static void i2cMasterInit(void)
 {
@@ -87,7 +83,8 @@ void app_main()
 {
     i2cInit();
 
-    
+    wait(500);
+    doFancyAnimation(lcdInfo);
 
     while(1)
     {

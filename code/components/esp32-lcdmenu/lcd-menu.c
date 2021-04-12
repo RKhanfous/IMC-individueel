@@ -1,4 +1,3 @@
-//Header include guard for the extension file (lcd-menu-elaboration.c)
 #ifndef LCD_MENU_C
 #define LCD_MENU_C
 
@@ -8,36 +7,20 @@
 #include "smbus.h"
 #include "i2c-lcd1602.h"
 #include "lcd-menu.h"
-#include "lcd-menu-elaboration.h"
-
-//ID's of every lcd menu (is also the number in the lcdMenus array)
-#define MAIN_MENU_ID 0
-#define ECHO_MENU_ID 1
-#define RADIO_MENU_ID 2
-#define CLOCK_MENU_ID 3
-#define SPEECH_MENU_ID 4
-
-#define INVALID 99
 
 static i2c_lcd1602_info_t *tmp_lcd_info;
 
 //Static functions
-static void doFancyAnimation(i2c_lcd1602_info_t*);
+void doFancyAnimation(i2c_lcd1602_info_t*);
 
 
 int menu_updateMenu(i2c_lcd1602_info_t *lcdInfo, void *p)
 {
-    if (lcdMenus[currentLcdMenu].update == NULL)
-        return LCD_MENU_ERROR;
-    
-    if (p != NULL)
-        lcdMenus[currentLcdMenu].update(p);
-
-    return refreshMenu(lcdInfo, currentLcdMenu, currentMenuItem);
+    return 0;
 }
 
 //Animation that plays when u start the application
-static void doFancyAnimation(i2c_lcd1602_info_t* lcdInfo)
+void doFancyAnimation(i2c_lcd1602_info_t* lcdInfo)
 {
     i2c_lcd1602_move_cursor(lcdInfo, 0, 0);
     for(int i = 0; i < 20; i++)
