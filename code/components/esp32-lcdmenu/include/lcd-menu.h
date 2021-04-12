@@ -21,7 +21,4 @@ Call this method to start the animation
 */
 void doFancyAnimation(i2c_lcd1602_info_t*);
 
-//Returns the lcd info
-i2c_lcd1602_info_t* menu_getLcdInfo();
-
 #endif

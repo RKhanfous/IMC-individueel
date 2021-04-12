@@ -85,6 +85,10 @@ void app_main()
 
     wait(500);
     doFancyAnimation(lcdInfo);
+    i2c_lcd1602_clear(lcdInfo);
+
+    wait(500);
+    doFancyAnimation(lcdInfo);
 
     while(1)
     {
