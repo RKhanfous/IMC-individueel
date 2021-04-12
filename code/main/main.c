@@ -13,18 +13,8 @@
 #include "smbus.h"
 #include "i2c-lcd1602.h"
 #include "lcd-menu.h"
-#include "qwiic_twist.h"
-#include "sdcard-mp3.h"
-#include "radioController.h"
-#include "sntp_sync.h"
-#include "goertzel.h"
 
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <time.h>
 #include <string.h>
 
 #define TAG "app"
@@ -45,12 +35,6 @@
 
 //lcd general settings
 static i2c_lcd1602_info_t *lcdInfo;
-
-//rotary encoder functions
-static void onEncoderClicked();
-static void onEncoderPressed();
-static void onEncoderMoved(int16_t);
-void stmpTimesyncEvent(struct timeval *tv);
 
 //boolean to check if you went back a menu
 static bool wentBack = false;
@@ -97,87 +81,13 @@ void i2cInit()
     lcdInfo = i2c_lcd1602_malloc();
     i2c_lcd1602_init(lcdInfo, smbusInfo, true, LCD_NUM_ROWS, LCD_NUM_COLUMNS, LCD_NUM_VIS_COLUMNS);
     i2c_lcd1602_set_cursor(lcdInfo, true);
-    i2c_lcd1602_move_cursor(lcdInfo, 4, 1);
-    i2c_lcd1602_write_string(lcdInfo, "Starting...");
-
-    //Rotary init
-    qwiic_twist_t *qwiicInfo = (qwiic_twist_t*)malloc(sizeof(qwiic_twist_t));
-
-    qwiicInfo->smbus_info = smbusInfo;
-    qwiicInfo->i2c_addr = QWIIC_TWIST_ADDRESS;
-    qwiicInfo->port = i2cNum;
-    qwiicInfo->xMutex = xSemaphoreCreateMutex();
-    qwiicInfo->task_enabled = true;
-    qwiicInfo->task_time = 0;
-    qwiicInfo->onButtonPressed = &onEncoderPressed;
-    qwiicInfo->onButtonClicked = &onEncoderClicked;
-    qwiicInfo->onMoved = &onEncoderMoved;
-    
-    qwiic_twist_init(qwiicInfo);
-    menu_initMenus(lcdInfo);
-    qwiic_twist_start_task(qwiicInfo);
-}
-
-// Encoder method that is used when u hold the encoder button.
-static void onEncoderPressed()
-{
-    clickCounter++;
-    if(clickCounter == 5)
-    {
-        menu_goToParentMenu(lcdInfo);
-        clickCounter = 0;
-        wentBack = true;
-    }
-}
-
-// Encoder method that is used when u click the encoder button.
-static void onEncoderClicked()
-{
-    if (!wentBack)
-    {
-        menu_onClick(lcdInfo);
-    }
-    clickCounter = 0;
-    wentBack = false; 
-}
-
-// Encoder method that is used to navigate left and right through the menu's.
-static void onEncoderMoved(int16_t diff)
-{
-    if(diff>0)
-    {
-        menu_goToNextItem(lcdInfo); 
-    } else 
-    {
-        menu_goToPreviousitem(lcdInfo);
-    }
-}
-
-// Method to update the time.
-void stmpTimesyncEvent(struct timeval *tv)
-{
-    ESP_LOGI(TAG, "Notification of a time synchronization event");
-
-    time_t now;
-    struct tm timeinfo;
-    time(&now);
-    
-    char strftimeBuf[64];
-    localtime_r(&now, &timeinfo);
-    strftime(strftimeBuf, sizeof(strftimeBuf), "%c", &timeinfo);
-    ESP_LOGI(TAG, "The current date/time in Amsterdam is: %s", strftimeBuf);
-    printf(strftimeBuf);
 }
 
 void app_main()
 {
     i2cInit();
 
-    // Initialise wifi and setup the time
-    radio_init();
-    wait(500);
-    radio_stop();
-    timesync_sntpSync(stmpTimesyncEvent);
+    
 
     while(1)
     {
