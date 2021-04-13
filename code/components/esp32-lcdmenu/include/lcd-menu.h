@@ -5,13 +5,101 @@
 #define LCD_MENU_OKE 0
 #define LCD_MENU_ERROR 1
 
-/*
-Call this method to update the current lcd menu
+const unsigned char botFireFrame1[8] = {
 
--Returns:       a LCD_MENU error code
--Parameters:    a pointer to the lcd info, a generic value     
-*/
-int menu_updateMenu(i2c_lcd1602_info_t*, void*);
+    0b00000000,
+    0b00000010,
+    0b00001000,
+    0b00000101,
+    0b00010100,
+    0b00011110,
+    0b00011111,
+    0b00011111
+};
+
+const unsigned char botFireFrame2[8] = {
+
+    0b00000000,
+    0b00000010,
+    0b00001000,
+    0b00000001,
+    0b00010100,
+    0b00011110,
+    0b00011111,
+    0b00011111
+};
+
+const unsigned char botFireFrame3[8] = {
+
+    0b00001000,
+    0b00000001,
+    0b00000000,
+    0b00000100,
+    0b00001100,
+    0b00011111,
+    0b00011111,
+    0b00011111
+};
+
+const unsigned char botFireFrame4[8] = {
+
+    0b00000010,
+    0b00000000,
+    0b00000000,
+    0b00000100,
+    0b00010100,
+    0b00011110,
+    0b00011111,
+    0b00011111
+};
+
+const unsigned char topFireFrame1[8] = {
+
+    0b00000000,
+    0b00000000,
+    0b00000000,
+    0b00000000,
+    0b00000000,
+    0b00000010,
+    0b00001000,
+    0b00000001
+};
+
+const unsigned char topFireFrame2[8] = {
+
+    0b00000000,
+    0b00000000,
+    0b00000000,
+    0b00000010,
+    0b00001000,
+    0b00000001,
+    0b00000000,
+    0b00000010
+};
+
+const unsigned char topFireFrame3[8] = {
+
+    0b00000000,
+    0b00000010,
+    0b00001000,
+    0b00000001,
+    0b00000000,
+    0b00000010,
+    0b00001000,
+    0b00000001
+};
+
+const unsigned char topFireFrame4[8] = {
+
+    0b00001000,
+    0b00000001,
+    0b00000000,
+    0b00000000,
+    0b00000010,
+    0b00001000,
+    0b00000001,
+    0b00000010
+};
 
 /*
 Call this method to start the animation
